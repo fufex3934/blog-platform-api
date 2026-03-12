@@ -6,6 +6,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import * as cacheManager from 'cache-manager';
+import { Post as PostInterface } from './interfaces/post.interface';
 
 @Injectable()
 export class PostsService {
@@ -16,7 +17,9 @@ export class PostsService {
 
   async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
     const newPost = new this.postModel({ ...createPostDto, authorId: userId });
-    return await newPost.save();
+    const saved = await newPost.save();
+    await this.cacheManager.clear();
+    return saved;
   }
 
   async findAll(page = 1, limit = 10) {
@@ -39,12 +42,18 @@ export class PostsService {
     return posts;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<PostInterface | null> {
+    const cacheKey = `post_${id}`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached as PostInterface;
+    }
     const post = await this.postModel.findById(id);
     if (!post) {
       throw new NotFoundException('post not found');
     }
-    return post;
+    await this.cacheManager.set(cacheKey, post);
+    return post as unknown as PostInterface;
   }
 
   async update(id: string, updatePostDto: UpdatePostDto) {
@@ -55,10 +64,14 @@ export class PostsService {
     if (!post) {
       throw new NotFoundException('post not found');
     }
+    await this.cacheManager.del(`post_$(id)`);
+    await this.cacheManager.clear();
     return post;
   }
 
   async delete(id: string) {
+    await this.cacheManager.del(`post_$(id)`);
+    await this.cacheManager.clear();
     return await this.postModel.findByIdAndDelete(id);
   }
 }
