@@ -14,8 +14,8 @@ export class PostsService {
     @Inject(CACHE_MANAGER) private cacheManager: cacheManager.Cache,
   ) {}
 
-  async create(createPostDto: CreatePostDto): Promise<Post> {
-    const newPost = new this.postModel(createPostDto);
+  async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
+    const newPost = new this.postModel({ ...createPostDto, authorId: userId });
     return await newPost.save();
   }
 
