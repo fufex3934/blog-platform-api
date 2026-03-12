@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
@@ -15,6 +16,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { PostOwnerGuard } from './guards/post-owner.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -53,11 +55,13 @@ export class PostsController {
   }
 
   @Patch(':id')
+  @UseGuards(PostOwnerGuard)
   async update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postService.update(id, updatePostDto);
   }
 
   @Delete(':id')
+  @UseGuards(PostOwnerGuard)
   async delete(id: string) {
     return this.postService.delete(id);
   }
