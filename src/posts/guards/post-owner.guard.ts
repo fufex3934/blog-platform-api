@@ -10,7 +10,7 @@ import { Request } from 'express';
 
 export interface UserWithRequest extends Request {
   user: {
-    id: string;
+    userId: string;
     email: string;
     role: string;
   };
@@ -26,13 +26,13 @@ export class PostOwnerGuard implements CanActivate {
     const postId = Array.isArray(paramsId) ? paramsId[0] : paramsId;
 
     const post = await this.postService.findOne(postId);
-    const userId = request.user.id;
+    const userId = request.user.userId;
 
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
-    if (post.authorId !== userId) {
+    if (post.authorId.toString() !== userId) {
       throw new ForbiddenException('You are not owner of this post');
     }
 
