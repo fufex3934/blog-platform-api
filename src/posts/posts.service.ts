@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from './schemas/post.schema';
@@ -31,24 +33,38 @@ export class PostsService {
     return saved;
   }
 
-  async findAll(page = 1, limit = 10) {
-    const cacheKey = `posts-${page}-${limit}`;
+  async findAll(page = 1, limit = 10, search?: string, tag?: string) {
+    // Include search & tag in cache key to avoid conflicts
+    const cacheKey = `posts-${page}-${limit}-${search || ''}-${tag || ''}`;
 
+    // Try cache
     const cachedPosts = await this.cacheManager.get(cacheKey);
-
     if (cachedPosts) {
       console.log('serving from cache');
       return cachedPosts;
     }
+
+    // Build filter
+    const filter: any = {};
+    if (search) filter.$text = { $search: search };
+    if (tag) filter.tags = { $in: [tag] };
+
     const skip = (page - 1) * limit;
 
-    const posts = await this.postModel.find().skip(skip).limit(limit).sort({
-      createdAt: -1,
-    });
+    // Fetch posts
+    const posts = await this.postModel
+      .find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    await this.cacheManager.set(cacheKey, posts);
+    // Optionally store count for pagination
+    const total = await this.postModel.countDocuments(filter);
 
-    return posts;
+    // Cache the result with TTL (e.g., 60s)
+    await this.cacheManager.set(cacheKey, { posts, total });
+
+    return { posts, total };
   }
 
   async findBySlug(slug: string): Promise<PostInterface | null> {

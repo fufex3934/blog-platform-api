@@ -38,8 +38,14 @@ export class PostsController {
   }
 
   @Get()
-  async findAll(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return this.postService.findAll(Number(page), Number(limit));
+  async findAll(
+    @Query('page') page = 1,
+
+    @Query('limit') limit = 10,
+    @Query('search') search?: string,
+    @Query('tag') tag?: string,
+  ) {
+    return this.postService.findAll(Number(page), Number(limit), search, tag);
   }
 
   @Get(':slug')
