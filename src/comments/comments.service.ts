@@ -19,6 +19,7 @@ export class CommentsService {
       content: dto.content,
       userId,
       postId,
+      parentId: dto.parentId || null,
     });
     return await newComment.save();
   }
