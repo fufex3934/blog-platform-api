@@ -7,6 +7,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import * as cacheManager from 'cache-manager';
 import { Post as PostInterface } from './interfaces/post.interface';
+import slugify from 'slugify';
 
 @Injectable()
 export class PostsService {
@@ -16,7 +17,15 @@ export class PostsService {
   ) {}
 
   async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
-    const newPost = new this.postModel({ ...createPostDto, authorId: userId });
+    const slug = slugify(createPostDto.title, {
+      lower: true,
+      strict: true,
+    });
+    const newPost = new this.postModel({
+      ...createPostDto,
+      slug,
+      authorId: userId,
+    });
     const saved = await newPost.save();
     await this.cacheManager.clear();
     return saved;
