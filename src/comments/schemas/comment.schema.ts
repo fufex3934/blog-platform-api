@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type CommentDocument = HydratedDocument<Comment>;
 
@@ -13,6 +13,12 @@ export class Comment {
 
   @Prop({ required: true, index: true })
   postId: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Comment', default: null })
+  parentId?: Types.ObjectId;
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);
+
+// Index for faster queries on postId + parentId
+CommentSchema.index({ postId: 1, parentId: 1 });
