@@ -19,6 +19,12 @@ export class Post {
 
   @Prop({ required: true })
   authorId: string;
+
+  @Prop({ type: [String], default: [] })
+  tags: string[];
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
+
+// Create text index for search
+PostSchema.index({ title: 'text', content: 'text', tags: 'text' });
