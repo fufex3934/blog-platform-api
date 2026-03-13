@@ -42,9 +42,9 @@ export class PostsController {
     return this.postService.findAll(Number(page), Number(limit));
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.postService.findOne(id);
+  @Get(':slug')
+  async findOne(@Param('slug') slug: string) {
+    return this.postService.findBySlug(slug);
   }
 
   @Patch(':id')

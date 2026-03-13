@@ -51,13 +51,13 @@ export class PostsService {
     return posts;
   }
 
-  async findOne(id: string): Promise<PostInterface | null> {
-    const cacheKey = `post_${id}`;
+  async findBySlug(slug: string): Promise<PostInterface | null> {
+    const cacheKey = `post_${slug}`;
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) {
       return cached as PostInterface;
     }
-    const post = await this.postModel.findById(id);
+    const post = await this.postModel.findOne({ slug });
     if (!post) {
       throw new NotFoundException('post not found');
     }

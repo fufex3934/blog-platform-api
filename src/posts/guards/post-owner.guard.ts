@@ -25,7 +25,7 @@ export class PostOwnerGuard implements CanActivate {
     const paramsId = request.params.id;
     const postId = Array.isArray(paramsId) ? paramsId[0] : paramsId;
 
-    const post = await this.postService.findOne(postId);
+    const post = await this.postService.findBySlug(postId);
     const userId = request.user.userId;
 
     if (!post) {
