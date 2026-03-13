@@ -8,13 +8,16 @@ export class Post {
   @Prop({ required: true })
   title: string;
 
+  @Prop({ required: true, unique: true })
+  slug: string;
+
   @Prop({ required: true })
   content: string;
 
   @Prop()
   imageUrl: string;
 
-  @Prop()
+  @Prop({ required: true })
   authorId: string;
 }
 
